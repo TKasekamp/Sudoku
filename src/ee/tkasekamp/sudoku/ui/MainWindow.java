@@ -57,6 +57,7 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				reset();
 				sudoku.readTestSudoku();
+				gamePanel.setNumbers(sudoku.getTable());
 			}
 		});
 		mnNewMenu.add(mntmA);
@@ -65,6 +66,7 @@ public class MainWindow {
 		mntmB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sudoku.solveSudoku();
+				gamePanel.setNumbers(sudoku.getTable());
 			}
 		});
 		mnNewMenu.add(mntmB);
@@ -79,6 +81,7 @@ public class MainWindow {
 		mnNewMenu.add(mntmExit);
 
 		gamePanel = new GamePanel();
+		frame.add(gamePanel);
 
 	}
 
@@ -89,10 +92,6 @@ public class MainWindow {
 	public void reset() {
 		sudoku.reset();
 		gamePanel.reset();
-	}
-
-	public void updateTable(int i, int j, int gridContent) {
-		System.out.println(i + ", " + j + ", " + gridContent);
 	}
 
 }

@@ -9,4 +9,6 @@ public interface Sudoku {
 	public void readTestSudoku();
 
 	public void solveSudoku();
+	
+	public int[][] getTable();
 }

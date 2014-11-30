@@ -1,12 +1,14 @@
 package ee.tkasekamp.sudoku.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import ee.tkasekamp.sudoku.App;
 import ee.tkasekamp.sudoku.reader.SudokuParser;
+import static ee.tkasekamp.sudoku.reader.SudokuParser.EMPTY;
 
 public class SudokuImpl implements Sudoku {
 	private SudokuParser parser;
@@ -24,7 +26,7 @@ public class SudokuImpl implements Sudoku {
 	public void readTestSudoku() {
 		try {
 			table = parser.parseSudokuResources(SudokuParser.TEST_SUDOKU);
-			grid = parser.parseSudokuResources(SudokuParser.TEST_SUDOKU);
+			grid = parser.parseSudokuResources(SudokuParser.DEFAULT_GRID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -33,13 +35,15 @@ public class SudokuImpl implements Sudoku {
 
 	@Override
 	public void solveSudoku() {
+
 		while (!checkIfSolved()) {
 			for (int i = 0; i < table.length; i++) {
 				for (int j = 0; j < table.length; j++) {
-					int grid = calculateGrid(i, j);
-					if (grid != SudokuParser.EMPTY) {
-						table[i][j] = grid;
-						App.window.updateTable(i, j, grid);
+					if (table[i][j] == EMPTY) {
+						int grid = calculateGrid(i, j);
+						if (grid != EMPTY) {
+							table[i][j] = grid;
+						}
 					}
 				}
 			}
@@ -54,8 +58,70 @@ public class SudokuImpl implements Sudoku {
 
 	}
 
+	@Override
+	public int[][] getTable() {
+		return table;
+	}
+
+	private int calculateGrid(int i, int j) {
+		int regionNr = grid[i][j];
+		Set<Integer> suitable = findSuitable(i, j, regionNr);
+		System.out.println("Calculate grid for " + i + ", " + j);
+		// System.out.println(suitable.toString());
+
+		List<Set<Integer>> stuffList = new ArrayList<>();
+
+		System.out.println("Starting with not suitable");
+		for (int k = 0; k < table.length; k++) {
+			for (int k2 = 0; k2 < table.length; k2++) {
+				boolean isThis = (k == i) && (k2 == j);
+				if (!isThis && (grid[k][k2] == regionNr)
+						&& (table[k][k2] == EMPTY)) {
+					Set<Integer> notSuitable = findAllInLine(k);
+					notSuitable.addAll(findAllInColumn(k2));
+					// System.out.println("for " + k + ", " + k2
+					// + notSuitable.toString());
+					stuffList.add(notSuitable);
+
+				}
+			}
+		}
+		// System.out.println(stuffList.toString());
+
+		// number && is in all stuffList
+		for (Integer number : suitable) {
+			boolean isInAll = true;
+			for (Set<Integer> set : stuffList) {
+				isInAll = isInAll && set.contains(number);
+			}
+			if (isInAll)
+				return number;
+		}
+		return EMPTY;
+	}
+
+	private Set<Integer> findAllInLine(int i) {
+		Set<Integer> inThisLine = new HashSet<>();
+		for (int j = 0; j < table.length; j++) {
+			if (table[i][j] != EMPTY) {
+				inThisLine.add(table[i][j]);
+			}
+		}
+		return inThisLine;
+	}
+
+	private Set<Integer> findAllInColumn(int j) {
+		Set<Integer> inThisColum = new HashSet<>();
+		for (int i = 0; i < table.length; i++) {
+			if (table[i][j] != EMPTY) {
+				inThisColum.add(table[i][j]);
+			}
+		}
+		return inThisColum;
+	}
+
 	/**
-	 * Calculates what should be in this grid
+	 * Finds a set of numbers that can be in this square.
 	 * 
 	 * @param i
 	 *            table row
@@ -63,17 +129,13 @@ public class SudokuImpl implements Sudoku {
 	 *            table column
 	 * @return
 	 */
-	private int calculateGrid(int i, int j) {
+	private Set<Integer> findSuitable(int i, int j, int regionNr) {
 		// Checking if filled
-		if (table[i][j] != SudokuParser.EMPTY)
-			return table[i][j];
-
-		int regionNr = grid[i][j];
 		Set<Integer> nums = new HashSet<Integer>(Arrays.asList(NUMBERS));
-		removeSubRegion(regionNr, nums);
-		removeColumn(i, j, nums);
-		removeLine(i, j, nums);
-		return 2;
+		nums = removeSubRegion(regionNr, nums);
+		nums = removeColumn(j, nums);
+		nums = removeLine(i, nums);
+		return nums;
 	}
 
 	/**
@@ -82,25 +144,46 @@ public class SudokuImpl implements Sudoku {
 	 * @return boolean
 	 */
 	private boolean checkIfSolved() {
-		for (int[] is : table) {
-			for (int i : is) {
-				if (i == SudokuParser.EMPTY)
+		for (int i = 0; i < table.length; i++) {
+			for (int j = 0; j < table.length; j++) {
+				if (table[i][j] == SudokuParser.EMPTY)
 					return false;
 			}
 		}
 		return true;
 	}
 
-	private void removeSubRegion(int regionNr, Set<Integer> nums) {
+	/**
+	 * Removes all numbers from nums that are already present in the region
+	 * specified by regionNr.
+	 * 
+	 * @param regionNr
+	 * @param nums
+	 */
+	private Set<Integer> removeSubRegion(int regionNr, Set<Integer> nums) {
+		for (int i = 0; i < grid.length; i++) {
+			for (int j = 0; j < grid.length; j++) {
+				if (grid[i][j] == regionNr) {
+					nums.remove(table[i][j]);
+				}
+			}
+		}
+		return nums;
+	}
+
+	private Set<Integer> removeLine(int i, Set<Integer> nums) {
+		for (int j = 0; j < grid.length; j++) {
+			nums.remove(table[i][j]);
+		}
+		return nums;
 
 	}
 
-	private void removeLine(int i, int j, Set<Integer> nums) {
-
-	}
-
-	private void removeColumn(int i, int j, Set<Integer> nums) {
-
+	private Set<Integer> removeColumn(int j, Set<Integer> nums) {
+		for (int i = 0; i < grid.length; i++) {
+			nums.remove(table[i][j]);
+		}
+		return nums;
 	}
 
 }

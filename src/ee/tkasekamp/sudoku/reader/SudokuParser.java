@@ -27,11 +27,12 @@ public class SudokuParser {
 	 */
 	private int[][] createTable(List<String> lines) {
 		int[][] n = new int[9][9];
+		String number = "";
 		for (int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
 			String[] numbers = line.split(" ");
 			for (int j = 0; j < numbers.length; j++) {
-				String number = numbers[i];
+				number = numbers[j];
 				if (number.equals(SEPARATOR)) {
 					n[i][j] = EMPTY;
 				} else {
