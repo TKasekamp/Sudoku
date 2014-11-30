@@ -1,0 +1,12 @@
+package ee.tkasekamp.sudoku.core;
+
+public interface Sudoku {
+
+	public void initialize();
+
+	public void reset();
+
+	public void readTestSudoku();
+
+	public void solveSudoku();
+}
