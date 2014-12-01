@@ -24,13 +24,8 @@ public class SudokuImpl implements Sudoku {
 
 	@Override
 	public void readTestSudoku() {
-		try {
-			table = parser.parseSudokuResources(SudokuParser.TEST_SUDOKU);
-			grid = parser.parseSudokuResources(SudokuParser.DEFAULT_GRID);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		readGrid(SudokuParser.DEFAULT_GRID);
+		readSudoku(SudokuParser.TEST_SUDOKU);
 	}
 
 	@Override
@@ -61,6 +56,32 @@ public class SudokuImpl implements Sudoku {
 	@Override
 	public int[][] getTable() {
 		return table;
+	}
+
+	@Override
+	public void readSudoku(String path) {
+		try {
+			table = parser.parseSudokuResources(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void readGrid(String path) {
+		try {
+			grid = parser.parseSudokuResources(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void generateSudoku() {
+		readGrid(SudokuParser.DEFAULT_GRID);
+
 	}
 
 	private int calculateGrid(int i, int j) {

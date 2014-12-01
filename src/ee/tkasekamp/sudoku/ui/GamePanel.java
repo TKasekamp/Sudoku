@@ -11,6 +11,7 @@ public class GamePanel extends JPanel {
 
 	private static final long serialVersionUID = 1431522427372007837L;
 	private JTable table;
+	private JLabel lblNiisamaKiri;
 
 	/**
 	 * Create the panel.
@@ -22,7 +23,7 @@ public class GamePanel extends JPanel {
 		table = new JTable();
 		add(table, BorderLayout.CENTER);
 
-		JLabel lblNiisamaKiri = new JLabel("Niisama kiri");
+		lblNiisamaKiri = new JLabel("Niisama kiri");
 		add(lblNiisamaKiri, BorderLayout.SOUTH);
 
 	}
@@ -33,7 +34,11 @@ public class GamePanel extends JPanel {
 	}
 
 	public void reset() {
-
+		lblNiisamaKiri = new JLabel("Niisama kiri");
+	}
+	
+	public void updateLabel(String newLabel) {
+		lblNiisamaKiri.setText(newLabel);
 	}
 
 	private class MyTableModel extends AbstractTableModel {

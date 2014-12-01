@@ -3,6 +3,7 @@ package ee.tkasekamp.sudoku.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -11,12 +12,14 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import ee.tkasekamp.sudoku.core.Sudoku;
+import ee.tkasekamp.sudoku.reader.SudokuParser;
 
 public class MainWindow {
 
 	private JFrame frame;
 	private Sudoku sudoku;
 	private GamePanel gamePanel;
+	private JFileChooser chooser;
 
 	/**
 	 * Create the application.
@@ -62,16 +65,39 @@ public class MainWindow {
 		});
 		mnNewMenu.add(mntmA);
 
-		JMenuItem mntmB = new JMenuItem("Lahenda sudoku");
-		mntmB.addActionListener(new ActionListener() {
+		JMenuItem mntmC = new JMenuItem("Genereeri sudoku");
+		mntmC.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				sudoku.solveSudoku();
+				reset();
+				sudoku.generateSudoku();
 				gamePanel.setNumbers(sudoku.getTable());
 			}
 		});
-		mnNewMenu.add(mntmB);
+		mnNewMenu.add(mntmC);
 
-		JMenuItem mntmExit = new JMenuItem("Exit");
+		JMenuItem mntmLaeTavalineSudoku = new JMenuItem("Lae tavaline sudoku");
+		mntmLaeTavalineSudoku.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				reset();
+				loadSudoku();
+				sudoku.readGrid(SudokuParser.DEFAULT_GRID);
+				gamePanel.setNumbers(sudoku.getTable());
+			}
+		});
+		mnNewMenu.add(mntmLaeTavalineSudoku);
+
+		JMenuItem mntmLaeJigsawSudoku = new JMenuItem("Lae Jigsaw sudoku");
+		mntmLaeJigsawSudoku.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				reset();
+				loadSudoku();
+				loadGrid();
+				gamePanel.setNumbers(sudoku.getTable());
+			}
+		});
+		mnNewMenu.add(mntmLaeJigsawSudoku);
+
+		JMenuItem mntmExit = new JMenuItem("Välju");
 		mntmExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.exit(1);
@@ -80,8 +106,22 @@ public class MainWindow {
 
 		mnNewMenu.add(mntmExit);
 
+		JMenu mnNewMenu_1 = new JMenu("Lahenda");
+		menuBar.add(mnNewMenu_1);
+
+		JMenuItem mntmB = new JMenuItem("Lahenda sudoku");
+		mnNewMenu_1.add(mntmB);
+		mntmB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				sudoku.solveSudoku();
+				gamePanel.setNumbers(sudoku.getTable());
+			}
+		});
+
 		gamePanel = new GamePanel();
-		frame.add(gamePanel);
+		frame.getContentPane().add(gamePanel);
+
+		chooser = new JFileChooser();
 
 	}
 
@@ -92,6 +132,27 @@ public class MainWindow {
 	public void reset() {
 		sudoku.reset();
 		gamePanel.reset();
+	}
+
+	public void updateLabel(String newName) {
+		gamePanel.setName(newName);
+	}
+
+	private void loadSudoku() {
+		chooser.setDialogTitle("Vali sudoku fail");
+		int returnVal = chooser.showOpenDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			sudoku.readSudoku(chooser.getSelectedFile().getAbsolutePath());
+		}
+
+	}
+
+	public void loadGrid() {
+		chooser.setDialogTitle("Vali regioonide fail");
+		int returnVal = chooser.showOpenDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			sudoku.readGrid(chooser.getSelectedFile().getAbsolutePath());
+		}
 	}
 
 }

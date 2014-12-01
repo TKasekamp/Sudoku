@@ -9,6 +9,12 @@ public interface Sudoku {
 	public void readTestSudoku();
 
 	public void solveSudoku();
-	
+
 	public int[][] getTable();
+
+	public void readSudoku(String path);
+
+	public void readGrid(String path);
+	
+	public void generateSudoku();
 }

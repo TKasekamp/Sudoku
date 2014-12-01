@@ -19,6 +19,11 @@ public class SudokuParser {
 		return createTable(lines);
 	}
 
+	public int[][] parseSudoku(String path) throws IOException {
+		List<String> lines = reader.readSudoku(path);
+		return createTable(lines);
+	}
+
 	/**
 	 * Creates a int matrix from a list of lines.
 	 * 
