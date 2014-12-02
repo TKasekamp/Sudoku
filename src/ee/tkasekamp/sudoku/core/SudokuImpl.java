@@ -84,6 +84,13 @@ public class SudokuImpl implements Sudoku {
 
 	}
 
+	@Override
+	public void readTestJigsaw() {
+		readGrid(SudokuParser.JIGSAW_GRID);
+		readSudoku(SudokuParser.TEST_JIGSAW);
+
+	}
+
 	private int calculateGrid(int i, int j) {
 		int regionNr = grid[i][j];
 		Set<Integer> suitable = findSuitable(i, j, regionNr);

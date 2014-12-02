@@ -17,4 +17,6 @@ public interface Sudoku {
 	public void readGrid(String path);
 	
 	public void generateSudoku();
+	
+	public void readTestJigsaw();
 }

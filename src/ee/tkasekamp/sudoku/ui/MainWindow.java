@@ -65,6 +65,16 @@ public class MainWindow {
 		});
 		mnNewMenu.add(mntmA);
 
+		JMenuItem mntmD = new JMenuItem("Test Jigsaw sudoku");
+		mntmD.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				reset();
+				sudoku.readTestJigsaw();
+				gamePanel.setNumbers(sudoku.getTable());
+			}
+		});
+		mnNewMenu.add(mntmD);
+
 		JMenuItem mntmC = new JMenuItem("Genereeri sudoku");
 		mntmC.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

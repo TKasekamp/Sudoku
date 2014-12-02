@@ -9,6 +9,8 @@ public class SudokuParser {
 	public static final int EMPTY = 0;
 	public static final String TEST_SUDOKU = "/testSudoku.txt";
 	public static final String DEFAULT_GRID = "/defaultGrid.txt";
+	public static final String TEST_JIGSAW = "/testJigsaw.txt";
+	public static final String JIGSAW_GRID = "/testJigsawGrid.txt";
 
 	public SudokuParser() {
 		reader = new SudokuReader();
