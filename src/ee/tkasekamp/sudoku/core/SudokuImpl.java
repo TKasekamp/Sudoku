@@ -194,4 +194,9 @@ public class SudokuImpl implements Sudoku {
 		}
 	}
 
+	@Override
+	public int[][] getGrid() {
+		return grid;
+	}
+
 }
