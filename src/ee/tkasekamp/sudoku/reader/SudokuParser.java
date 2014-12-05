@@ -16,13 +16,23 @@ public class SudokuParser {
 		reader = new SudokuReader();
 	}
 
-	public int[][] parseSudokuResources(String path) throws IOException {
-		List<String> lines = reader.readSudokuResources(path);
+	public int[][] parseSudokuResources(String path) {
+		List<String> lines = null;
+		try {
+			lines = reader.readSudokuResources(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return createTable(lines);
 	}
 
-	public int[][] parseSudoku(String path) throws IOException {
-		List<String> lines = reader.readSudoku(path);
+	public int[][] parseSudoku(String path) {
+		List<String> lines = null;
+		try {
+			lines = reader.readSudoku(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return createTable(lines);
 	}
 

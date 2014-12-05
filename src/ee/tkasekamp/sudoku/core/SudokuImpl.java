@@ -1,20 +1,14 @@
 package ee.tkasekamp.sudoku.core;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Random;
 
 import ee.tkasekamp.sudoku.reader.SudokuParser;
-import static ee.tkasekamp.sudoku.reader.SudokuParser.EMPTY;
 
 public class SudokuImpl implements Sudoku {
 	private SudokuParser parser;
 	private int[][] table;
 	private int[][] grid;
-	public static final Integer[] NUMBERS = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	private boolean solutionFound = false;
 
 	@Override
 	public void initialize() {
@@ -23,33 +17,23 @@ public class SudokuImpl implements Sudoku {
 	}
 
 	@Override
+	public void reset() {
+		table = null;
+		grid = null;
+		solutionFound = false;
+
+	}
+
+	@Override
 	public void readTestSudoku() {
-		readGrid(SudokuParser.DEFAULT_GRID);
-		readSudoku(SudokuParser.TEST_SUDOKU);
+		table = parser.parseSudokuResources(SudokuParser.TEST_SUDOKU);
+		grid = parser.parseSudokuResources(SudokuParser.DEFAULT_GRID);
+
 	}
 
 	@Override
 	public void solveSudoku() {
-
-		while (!checkIfSolved()) {
-			for (int i = 0; i < table.length; i++) {
-				for (int j = 0; j < table.length; j++) {
-					if (table[i][j] == EMPTY) {
-						int grid = calculateGrid(i, j);
-						if (grid != EMPTY) {
-							table[i][j] = grid;
-						}
-					}
-				}
-			}
-		}
-
-	}
-
-	@Override
-	public void reset() {
-		table = null;
-		grid = null;
+		solve(0, 0);
 
 	}
 
@@ -60,110 +44,120 @@ public class SudokuImpl implements Sudoku {
 
 	@Override
 	public void readSudoku(String path) {
-		try {
-			table = parser.parseSudokuResources(path);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		table = parser.parseSudoku(path);
+		grid = parser.parseSudokuResources(SudokuParser.DEFAULT_GRID);
 
 	}
 
 	@Override
 	public void readGrid(String path) {
-		try {
-			grid = parser.parseSudokuResources(path);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		grid = parser.parseSudoku(path);
 
 	}
 
 	@Override
 	public void generateSudoku() {
-		readGrid(SudokuParser.DEFAULT_GRID);
 
+		grid = parser.parseSudokuResources(SudokuParser.DEFAULT_GRID);
+
+		table = new int[9][9];
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				table[i][j] = SudokuParser.EMPTY;
+			}
+		}
+		// Starting at a random point
+		solve(randomNumber(), randomNumber());
+		// Making it a bit more random
+		shuffleTable();
 	}
 
 	@Override
 	public void readTestJigsaw() {
-		readGrid(SudokuParser.JIGSAW_GRID);
-		readSudoku(SudokuParser.TEST_JIGSAW);
+		grid = parser.parseSudokuResources(SudokuParser.JIGSAW_GRID);
+		table = parser.parseSudokuResources(SudokuParser.TEST_JIGSAW);
 
-	}
-
-	private int calculateGrid(int i, int j) {
-		int regionNr = grid[i][j];
-		Set<Integer> suitable = findSuitable(i, j, regionNr);
-		System.out.println("Calculate grid for " + i + ", " + j);
-		// System.out.println(suitable.toString());
-
-		List<Set<Integer>> stuffList = new ArrayList<>();
-
-		System.out.println("Starting with not suitable");
-		for (int k = 0; k < table.length; k++) {
-			for (int k2 = 0; k2 < table.length; k2++) {
-				boolean isThis = (k == i) && (k2 == j);
-				if (!isThis && (grid[k][k2] == regionNr)
-						&& (table[k][k2] == EMPTY)) {
-					Set<Integer> notSuitable = findAllInLine(k);
-					notSuitable.addAll(findAllInColumn(k2));
-					// System.out.println("for " + k + ", " + k2
-					// + notSuitable.toString());
-					stuffList.add(notSuitable);
-
-				}
-			}
-		}
-		// System.out.println(stuffList.toString());
-
-		// number && is in all stuffList
-		for (Integer number : suitable) {
-			boolean isInAll = true;
-			for (Set<Integer> set : stuffList) {
-				isInAll = isInAll && set.contains(number);
-			}
-			if (isInAll)
-				return number;
-		}
-		return EMPTY;
-	}
-
-	private Set<Integer> findAllInLine(int i) {
-		Set<Integer> inThisLine = new HashSet<>();
-		for (int j = 0; j < table.length; j++) {
-			if (table[i][j] != EMPTY) {
-				inThisLine.add(table[i][j]);
-			}
-		}
-		return inThisLine;
-	}
-
-	private Set<Integer> findAllInColumn(int j) {
-		Set<Integer> inThisColum = new HashSet<>();
-		for (int i = 0; i < table.length; i++) {
-			if (table[i][j] != EMPTY) {
-				inThisColum.add(table[i][j]);
-			}
-		}
-		return inThisColum;
 	}
 
 	/**
-	 * Finds a set of numbers that can be in this square.
+	 * Recursive function that tries to put a number into a cell. If no numbers
+	 * can be inserted then it backtracks and starts with a new number.
 	 * 
 	 * @param i
-	 *            table row
 	 * @param j
-	 *            table column
-	 * @return
 	 */
-	private Set<Integer> findSuitable(int i, int j, int regionNr) {
-		// Checking if filled
-		Set<Integer> nums = new HashSet<Integer>(Arrays.asList(NUMBERS));
-		nums = removeSubRegion(regionNr, nums);
-		nums = removeColumn(j, nums);
-		nums = removeLine(i, nums);
-		return nums;
+	private void solve(int i, int j) {
+		if (checkIfSolved()) {
+			solutionFound = true;
+			return;
+		}
+
+		if (table[i][j] != SudokuParser.EMPTY)
+			solveHepler(i, j);
+		else {
+			// Find a valid number for the empty cell
+			for (int num = 1; num < 10; num++) {
+				if (checkIfInRow(i, num) && checkIfInCol(j, num)
+						&& checkIfInGrid(i, j, num)) {
+					table[i][j] = num;
+
+					solveHepler(i, j);
+
+					if (solutionFound)
+						return;
+
+				}
+			}
+
+			table[i][j] = SudokuParser.EMPTY;
+		}
+	}
+
+	/**
+	 * Finds the next cell to solve. If at the end then starts at the beginning.
+	 * 
+	 * @param i
+	 * @param j
+	 */
+	private void solveHepler(int i, int j) {
+
+		if (i == 8 && j == 8)
+			solve(0, 0);
+		else if (j < 8)
+			solve(i, j + 1);
+		else
+			solve(i + 1, 0);
+
+	}
+
+	private boolean checkIfInRow(int i, int num) {
+		for (int j = 0; j < 9; j++)
+			if (table[i][j] == num)
+				return false;
+
+		return true;
+	}
+
+	private boolean checkIfInCol(int j, int num) {
+		for (int i = 0; i < 9; i++)
+			if (table[i][j] == num)
+				return false;
+
+		return true;
+	}
+
+	private boolean checkIfInGrid(int row, int col, int num) {
+		int gridNr = grid[row][col];
+		for (int i = 0; i < grid.length; i++) {
+			for (int j = 0; j < grid.length; j++) {
+				if (grid[i][j] == gridNr && table[i][j] == num) {
+					return true;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -172,8 +166,8 @@ public class SudokuImpl implements Sudoku {
 	 * @return boolean
 	 */
 	private boolean checkIfSolved() {
-		for (int i = 0; i < table.length; i++) {
-			for (int j = 0; j < table.length; j++) {
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
 				if (table[i][j] == SudokuParser.EMPTY)
 					return false;
 			}
@@ -181,37 +175,23 @@ public class SudokuImpl implements Sudoku {
 		return true;
 	}
 
+	private int randomNumber() {
+		Random random = new Random();
+		return (int) (random.nextDouble() * 9);
+	}
+
 	/**
-	 * Removes all numbers from nums that are already present in the region
-	 * specified by regionNr.
-	 * 
-	 * @param regionNr
-	 * @param nums
+	 * Switches rows to make the table more random.
 	 */
-	private Set<Integer> removeSubRegion(int regionNr, Set<Integer> nums) {
-		for (int i = 0; i < grid.length; i++) {
-			for (int j = 0; j < grid.length; j++) {
-				if (grid[i][j] == regionNr) {
-					nums.remove(table[i][j]);
-				}
-			}
-		}
-		return nums;
-	}
+	private void shuffleTable() {
+		for (int a = 0; a < randomNumber(); a++) {
+			int i = randomNumber();
+			int j = randomNumber();
+			int[] s = table[i];
+			table[i] = table[j];
+			table[j] = s;
 
-	private Set<Integer> removeLine(int i, Set<Integer> nums) {
-		for (int j = 0; j < grid.length; j++) {
-			nums.remove(table[i][j]);
 		}
-		return nums;
-
-	}
-
-	private Set<Integer> removeColumn(int j, Set<Integer> nums) {
-		for (int i = 0; i < grid.length; i++) {
-			nums.remove(table[i][j]);
-		}
-		return nums;
 	}
 
 }

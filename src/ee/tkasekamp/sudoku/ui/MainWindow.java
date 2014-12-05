@@ -12,7 +12,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import ee.tkasekamp.sudoku.core.Sudoku;
-import ee.tkasekamp.sudoku.reader.SudokuParser;
+import javax.swing.JSeparator;
 
 public class MainWindow {
 
@@ -83,6 +83,9 @@ public class MainWindow {
 				gamePanel.setNumbers(sudoku.getTable());
 			}
 		});
+
+		JSeparator separator_1 = new JSeparator();
+		mnNewMenu.add(separator_1);
 		mnNewMenu.add(mntmC);
 
 		JMenuItem mntmLaeTavalineSudoku = new JMenuItem("Lae tavaline sudoku");
@@ -90,10 +93,13 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				reset();
 				loadSudoku();
-				sudoku.readGrid(SudokuParser.DEFAULT_GRID);
+				// sudoku.readGrid(SudokuParser.DEFAULT_GRID);
 				gamePanel.setNumbers(sudoku.getTable());
 			}
 		});
+
+		JSeparator separator_2 = new JSeparator();
+		mnNewMenu.add(separator_2);
 		mnNewMenu.add(mntmLaeTavalineSudoku);
 
 		JMenuItem mntmLaeJigsawSudoku = new JMenuItem("Lae Jigsaw sudoku");
@@ -113,6 +119,9 @@ public class MainWindow {
 				System.exit(1);
 			}
 		});
+
+		JSeparator separator = new JSeparator();
+		mnNewMenu.add(separator);
 
 		mnNewMenu.add(mntmExit);
 
